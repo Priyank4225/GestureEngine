@@ -1,0 +1,44 @@
+import cv2
+import csv
+import mediapipe as mp
+from mediapipe.tasks import python
+from mediapipe.tasks.python import vision
+from draw import draw_landmarks_on_image
+
+model = "ThumbsUp"
+
+cam = cv2.VideoCapture(0)
+base_options = python.BaseOptions(model_asset_path='hand_landmarker.task')
+options = vision.HandLandmarkerOptions(base_options=base_options, num_hands=1)
+detector = vision.HandLandmarker.create_from_options(options)
+csv_file = open(f"Models/{model}/data.csv", "a", newline="")
+csv_writer = csv.writer(csv_file)
+cap = None
+while True:
+    ret, frame = cam.read()
+    frame = cv2.flip(frame, 1)
+    imgRGB = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    imgRGB = mp.Image(image_format=mp.ImageFormat.SRGB, data=imgRGB)
+    detection_result = detector.detect(imgRGB)
+    annotated_image = draw_landmarks_on_image(frame, detection_result)
+    cv2.imshow("webcam", annotated_image)
+    inp = cv2.waitKey(1)
+    if inp == ord('q'):
+        break
+    elif inp == ord('c'):
+        label = input("Enter label index: ")
+        if input("Confirm Y/N?") == "Y":
+            if len(detection_result.hand_landmarks) > 0:
+                hand_landmarks = detection_result.hand_landmarks[0]
+                row = [label]
+                for landmark in hand_landmarks:
+                    row.extend([
+                        landmark.x,
+                        landmark.y,
+                        landmark.z
+                    ])
+                csv_writer.writerow(row)
+                print("Saved.")
+csv_file.close()
+cam.release()
+cv2.destroyAllWindows()
