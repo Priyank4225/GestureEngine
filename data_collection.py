@@ -1,6 +1,7 @@
 import cv2
 import csv
 import mediapipe as mp
+import numpy as np
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from draw import draw_landmarks_on_image
@@ -31,12 +32,25 @@ while True:
             if len(detection_result.hand_landmarks) > 0:
                 hand_landmarks = detection_result.hand_landmarks[0]
                 row = [label]
-                for landmark in hand_landmarks:
-                    row.extend([
-                        landmark.x,
-                        landmark.y,
-                        landmark.z
-                    ])
+                landmarks = []
+                if detection_result.handedness[0][0].category_name == "Right":
+                    for landmark in hand_landmarks:
+                        landmarks.append([
+                            -landmark.x,
+                            landmark.y,
+                            landmark.z
+                        ])
+                else:
+                    for landmark in hand_landmarks:
+                        landmarks.append([
+                            landmark.x,
+                            landmark.y,
+                            landmark.z
+                        ])
+                landmarks = np.array(landmarks)
+                scale = np.sqrt(np.sum(np.square(landmarks[9] - landmarks[0])))
+                landmarks = (landmarks - landmarks[0]) / scale
+                row.extend(landmarks.flatten())
                 csv_writer.writerow(row)
                 print("Saved.")
 csv_file.close()

@@ -19,12 +19,32 @@ def softmax(x):
     e_x = np.exp(x - np.max(x, axis=0, keepdims=True))
     return e_x / np.sum(e_x, axis=0, keepdims=True)
 
-def get_pred(landmarks, accuracy=0.70):
-    hand_landmarks_list = landmarks.hand_landmarks
+def get_pred(detection_result, accuracy=0.70):
+    hand_landmarks_list = detection_result.hand_landmarks
+    handedness_list = detection_result.handedness
     result = []
-    for hand_landmarks in hand_landmarks_list:
-        input_data = [[landmark.x, landmark.y, landmark.z] for landmark in hand_landmarks]
-        input_data = np.array(input_data).flatten().reshape(-1, 1)
+    for idx in range(len(hand_landmarks_list)):
+        hand_landmarks = hand_landmarks_list[idx]
+        handedness = handedness_list[idx][0].category_name
+        landmarks = []
+        if handedness == "Right":
+            for landmark in hand_landmarks:
+                landmarks.append([
+                    -landmark.x,
+                    landmark.y,
+                    landmark.z
+                ])
+        else:
+            for landmark in hand_landmarks:
+                landmarks.append([
+                    landmark.x,
+                    landmark.y,
+                    landmark.z
+                ])
+        landmarks = np.array(landmarks)
+        scale = np.sqrt(np.sum(np.square(landmarks[9] - landmarks[0])))
+        landmarks = (landmarks - landmarks[0]) / scale
+        input_data = landmarks.flatten().reshape(-1, 1)
         l1_out = ReLU(layer1_w.dot(input_data) + layer1_b)
         l2_out = ReLU(layer2_w.dot(l1_out) + layer2_b)
         l3_out = layer3_w.dot(l2_out) + layer3_b
