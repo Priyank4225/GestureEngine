@@ -275,6 +275,6 @@ This project is open-source and available under the MIT License.
 
 # Author
 
-Created by [Your Name]
+Created by Priyank Sharma
 
 If you found this project useful, consider giving the repository a ⭐ on GitHub.
