@@ -13,6 +13,22 @@ The project provides a complete machine learning pipeline for:
 
 Unlike many gesture recognition projects that rely entirely on high-level ML frameworks, GestureEngine implements forward propagation, backpropagation, gradient descent, and inference manually for educational and research purposes.
 
+## Creating Your Own Gesture Model
+
+Want to build a custom gesture recognition system? GestureEngine makes it easy.
+
+1. Clone this repository.
+2. Create a new folder inside the `Models/` directory for your model.
+3. Create a `model.json` file containing your model configuration (labels, network dimensions, etc.).
+4. Update the `model` variable in the project files to match your model's name.
+5. Collect training data using `data_collection.py`.
+6. Train the model using `ml_train.py`.
+7. Run `main.py` to test your gesture recognizer in real time.
+
+Make sure you use the same model name during data collection, training, and inference so that the correct files are loaded.
+
+Have fun experimenting with your own gestures and models!
+
 ---
 
 # Features
@@ -51,13 +67,14 @@ Live Visualization
 ```text
 GestureEngine/
 │
-├── main.py                 # Main real-time prediction app
-├── data_collection.py      # Dataset collection utility
-├── draw.py                 # Landmark rendering utilities
-├── ml.py                   # Neural network inference
-├── ml_train.py             # Neural network training
-├── requirements.txt        # Dependencies
-├── hand_landmarker.task    # MediaPipe hand landmark model
+├── main.py
+├── data_collection.py
+├── draw.py
+├── ml.py
+├── ml_train.py
+├── tools.py
+├── requirements.txt
+├── hand_landmarker.task
 │
 ├── Models/
 │   └── ThumbsUp/
@@ -65,6 +82,7 @@ GestureEngine/
 │       ├── model.json
 │       └── model_weights.npz
 │
+├── LICENSE
 └── README.md
 ```
 
