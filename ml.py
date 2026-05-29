@@ -1,23 +1,19 @@
 import numpy as np
 import json
+from tools import *
 
 model = "ThumbsUp"
 with open(f"Models/{model}/model.json", "r") as f:
-    datapoints = json.load(f)["labels"]
+    file = json.load(f)
+    datapoints = file["labels"]
+    dims = file["dims"]
+layers = len(dims)-1
 data = np.load(f"Models/{model}/model_weights.npz")
-layer1_w = data["W1"]
-layer2_w = data["W2"]
-layer3_w = data["W3"]
-layer1_b = data["b1"]
-layer2_b = data["b2"]
-layer3_b = data["b3"]
+weights = np.load(f"Models/{model}/model_weights.npz")
+biases = np.load(f"Models/{model}/model_biases.npz")
+weights = [weights[f"W{str(i+1)}"] for i in range(layers)]
+biases = [biases[f"b{str(i+1)}"] for i in range(layers)]
 
-def ReLU(x):
-    return np.maximum(0, x)
-
-def softmax(x):
-    e_x = np.exp(x - np.max(x, axis=0, keepdims=True))
-    return e_x / np.sum(e_x, axis=0, keepdims=True)
 
 def get_pred(detection_result, accuracy=0.70):
     hand_landmarks_list = detection_result.hand_landmarks
@@ -44,13 +40,15 @@ def get_pred(detection_result, accuracy=0.70):
         landmarks = np.array(landmarks)
         scale = np.sqrt(np.sum(np.square(landmarks[9] - landmarks[0])))
         landmarks = (landmarks - landmarks[0]) / scale
-        input_data = landmarks.flatten().reshape(-1, 1)
-        l1_out = ReLU(layer1_w.dot(input_data) + layer1_b)
-        l2_out = ReLU(layer2_w.dot(l1_out) + layer2_b)
-        l3_out = layer3_w.dot(l2_out) + layer3_b
-        output = softmax(l3_out)
-        pred_idx = np.argmax(output)
-        if output[pred_idx][0] >= accuracy:
+        res = landmarks.flatten().reshape(-1, 1)
+        for i in range(layers):
+            if i == layers-1:
+                res = softmax(weights[i].dot(res) + biases[i])
+            else:
+                res = ReLU(weights[i].dot(res) + biases[i])
+        pred_idx = get_predictions(res)[0]
+        print(pred_idx)
+        if res[pred_idx][0] >= accuracy:
             result.append(datapoints[pred_idx])
         else:
             result.append(datapoints[-1])

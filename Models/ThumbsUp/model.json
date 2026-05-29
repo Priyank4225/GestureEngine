@@ -1,0 +1,5 @@
+{
+    "name": "ThumbsUp",
+    "dims": [63, 32, 16, 2],
+    "labels": ["ThumbsUp", "ThumbsDown"]
+}
